@@ -5,7 +5,7 @@ from datetime import date
 
 # URL de l'API back-end. On la met en variable pour pouvoir
 # la changer facilement si on déploie ailleurs.
-API = os.getenv("API_URL", "http://localhost:8000")
+API = os.getenv("API_URL", "https://dental-scheduler-api.up.railway.app")
 
 # ── Configuration de la page ────────────────────────────────────────────────
 st.set_page_config(
