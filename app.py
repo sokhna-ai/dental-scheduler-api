@@ -1,10 +1,11 @@
 import streamlit as st
 import requests
+import os
 from datetime import date
 
 # URL de l'API back-end. On la met en variable pour pouvoir
 # la changer facilement si on déploie ailleurs.
-API = "http://localhost:8000"
+API = os.getenv("API_URL", "http://localhost:8000")
 
 # ── Configuration de la page ────────────────────────────────────────────────
 st.set_page_config(
