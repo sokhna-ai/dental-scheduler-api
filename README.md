@@ -1,81 +1,81 @@
 # dental-scheduler-api
 
-I built this project to practice building a real REST API from scratch with Python.
+I built this project to practice building a full-stack application from scratch: a REST API on the back-end and a real interface on the front-end.
 
-The idea: a small back-end for a dental practice. You can create patients, book appointments, filter them by date or status, and get a quick stats summary. Nothing fancy, but everything works and the code is clean.
+The idea: a management tool for a dental practice. You can create patients, book appointments, update their status, filter by date or by patient, and see live stats on the dashboard. It is the kind of thing DentalCall actually builds, so it felt like a good subject to practice on.
 
 ---
 
-## Endpoints
+## What it looks like
 
-| Endpoint | Method | What it does |
-|---|---|---|
-| `/patients` | GET | List all patients |
-| `/patients/{id}` | GET | Get one patient by ID |
-| `/patients` | POST | Add a new patient |
-| `/rendez-vous` | GET | List appointments (filterable) |
-| `/rendez-vous` | POST | Book an appointment |
-| `/rendez-vous/{id}/statut` | PATCH | Update status: confirme / annule / en_attente |
-| `/stats` | GET | Quick cabinet overview |
+The front-end is a Streamlit app that talks to the FastAPI back-end:
 
-The `/rendez-vous` endpoint accepts optional query params you can combine freely: `?date=2026-05-05`, `?statut=confirme`, `?patient_id=1`.
+- Dashboard with 4 live stats (total patients, appointments, confirmed, today)
+- Appointment list with filters by date, status and patient
+- One-click status update (confirm / cancel) directly from the list
+- Patient detail page with their full appointment history
+- Forms to create new patients and book new appointments
+
+---
+
+## How it works
+
+```
+app.py (Streamlit)  <-->  main.py (FastAPI)  <-->  dental.db (SQLite)
+```
+
+The front-end sends HTTP requests to the API. The API reads and writes to the database. The database file is created automatically on first run, no setup needed.
 
 ---
 
 ## Stack
 
 - Python 3.10+
-- FastAPI (REST framework, auto-generates interactive docs at `/docs`)
-- SQLite (no database setup needed, the file is created automatically)
+- FastAPI (REST back-end, auto-generates interactive docs at `/docs`)
+- SQLite (lightweight database, no installation required)
+- Streamlit (front-end interface)
 - Pydantic (request validation)
+- Requests (HTTP calls from the front-end to the API)
 
 ---
 
 ## Run it locally
 
+You need two terminals open at the same time.
+
+**Terminal 1: start the API**
 ```bash
 git clone https://github.com/sokhna-ai/dental-scheduler-api.git
 cd dental-scheduler-api
-
 pip install -r requirements.txt
-
 uvicorn main:app --reload
 ```
 
-Go to **http://localhost:8000/docs** and you get a full interactive interface to test every endpoint directly in the browser. FastAPI generates it automatically from the code.
+**Terminal 2: start the interface**
+```bash
+streamlit run app.py
+```
 
-The database is created and seeded on first run (3 patients, 5 appointments ready to use).
+Then open **http://localhost:8501** for the interface, or **http://localhost:8000/docs** if you want to test the API directly.
+
+The database seeds itself on first run with 3 patients and 5 appointments so you can explore right away.
 
 ---
 
-## Example responses
+## API endpoints
 
-**GET /stats**
-```json
-{
-  "total_patients": 3,
-  "total_rdv": 5,
-  "rdv_confirmes": 4,
-  "rdv_annules": 1,
-  "rdv_aujourd_hui": 0
-}
-```
-
-**GET /rendez-vous?date=2026-05-05**
-```json
-[
-  { "id": 1, "heure": "09:00", "motif": "Détartrage", "statut": "confirme", "nom": "Dupont", "prenom": "Marie" },
-  { "id": 3, "heure": "10:00", "motif": "Extraction", "statut": "confirme", "nom": "Martin", "prenom": "Lucas" }
-]
-```
-
-**POST /patients** (request body)
-```json
-{ "nom": "Fall", "prenom": "Sokhna", "email": "s@example.com", "telephone": "0600000000" }
-```
+| Endpoint | Method | What it does |
+|---|---|---|
+| `/patients` | GET | List all patients |
+| `/patients/{id}` | GET | Get one patient |
+| `/patients` | POST | Create a patient |
+| `/rendez-vous` | GET | List appointments (filterable by date, status, patient) |
+| `/rendez-vous` | POST | Book an appointment |
+| `/rendez-vous/{id}/statut` | PATCH | Update status: confirme / annule / en_attente |
+| `/stats` | GET | Dashboard stats |
 
 ---
 
 ## What I learned building this
 
-Designing REST endpoints cleanly is harder than it looks. I had to think about when to use path params vs query params, which HTTP status codes actually make sense (201 for creation, 409 when an email already exists, 404 when a resource is not found), and how to write JOIN queries so the API returns useful data instead of just raw foreign key IDs.
+Making the front-end and the back-end talk to each other cleanly is harder than building either one alone. I had to think about error handling on both sides (what the API returns, how the interface displays it), how to keep state between re-renders in Streamlit, and how to design the API so the front-end never has to do extra work to display something useful.
