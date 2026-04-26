@@ -269,3 +269,15 @@ def stats():
 
     conn.close()
     return result
+
+
+# ── Lancement ───────────────────────────────────────────────────────────────
+# Ce bloc est utilisé par Railway (et tout hébergeur) pour démarrer l'API.
+# La variable PORT est injectée automatiquement par la plateforme.
+# En local, si PORT n'est pas défini, on utilise 8000 par défaut.
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
